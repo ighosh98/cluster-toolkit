@@ -305,6 +305,116 @@ module "workload_identity" {
   ]
 }
 
+resource "kubernetes_namespace" "team_a" {
+  metadata {
+    name = "team-a"
+  }
+}
+resource "kubernetes_namespace" "team_b" {
+  metadata {
+    name = "team-b"
+  }
+}
+
+resource "kubernetes_job" "sample_job_team_a" {
+  metadata {
+    namespace     = kubernetes_namespace.team_a.metadata[0].name
+    generate_name = "sample-job-team-a-"
+
+    annotations = {
+      "kueue.x-k8s.io/queue-name" = "lq-team-a"
+    }
+  }
+
+  spec {
+    ttl_seconds_after_finished = 60
+    parallelism                = 3
+    completions                = 3
+
+    template {
+      metadata {
+        labels = {
+          app = "sample-job-team-a"
+        }
+      }
+
+      spec {
+        node_selector = {
+          "cloud.google.com/gke-accelerator" = "nvidia-h100-mega-80gb"
+        }
+
+        container {
+          name  = "sample-job-team-a-job"
+          image = "gcr.io/k8s-staging-perf-tests/sleep:latest"
+          args  = ["10s"]
+
+          resources {
+            requests = {
+              "nvidia.com/gpu" = "4"
+            }
+            limits = {
+              "nvidia.com/gpu" = "4"
+            }
+          }
+        }
+
+        restart_policy = "Never"
+      }
+    }
+  }
+  wait_for_completion = false
+}
+
+resource "kubernetes_job" "sample_job_team_b" {
+  metadata {
+    namespace     = kubernetes_namespace.team_b.metadata[0].name
+    generate_name = "sample-job-team-b-"
+
+    annotations = {
+      "kueue.x-k8s.io/queue-name" = "lq-team-b"
+    }
+  }
+
+  spec {
+    ttl_seconds_after_finished = 60
+    parallelism                = 3
+    completions                = 3
+
+    template {
+      metadata {
+        labels = {
+          app = "sample-job-team-b"
+        }
+      }
+
+      spec {
+        node_selector = {
+          "cloud.google.com/gke-accelerator" = "nvidia-h100-mega-80gb"
+        }
+
+        container {
+          name  = "dummy-job"
+          image = "gcr.io/k8s-staging-perf-tests/sleep:latest"
+          args  = ["10s"]
+
+          resources {
+            requests = {
+              "nvidia.com/gpu" = "4"
+            }
+            limits = {
+              "nvidia.com/gpu" = "4"
+            }
+          }
+        }
+
+        restart_policy = "Never"
+      }
+    }
+  }
+  wait_for_completion = false
+
+}
+
 module "kubectl_apply" {
   source = "../../management/kubectl-apply"
 
