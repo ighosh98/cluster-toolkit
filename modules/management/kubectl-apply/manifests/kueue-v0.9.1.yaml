@@ -12330,11 +12330,11 @@ spec:
       containers:
       - args:
         - --config=/controller_manager_config.yaml
-        - --zap-log-level=5
+        - --zap-log-level=2
         - --feature-gates=TopologyAwareScheduling=true
         command:
         - /manager
-        image: registry.k8s.io/kueue/kueue:v0.9.0
+        image: registry.k8s.io/kueue/kueue:v0.9.1
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
