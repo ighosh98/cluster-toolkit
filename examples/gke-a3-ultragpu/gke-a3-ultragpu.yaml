@@ -15,23 +15,39 @@
 blueprint_name: gke-a3-ultra
 
 vars:
-  project_id: # add this
-  deployment_name: # add this
-  region: # add this
-  zone: # add this
+  project_id: hpc-toolkit-dev # add this
+  deployment_name: a3-ultra # add this
+  region: europe-west1 # add this
+  zone: europe-west1-b # add this
   # Cidr block containing the IP of the machine calling terraform.
   # The following line must be updated for this example to work.
-  authorized_cidr: # add this
-  extended_reservation: # add this
+  authorized_cidr: 0.0.0.0/0 # add this
+  extended_reservation: slurm-dev-gcp-a3u-gsc # add this
   # Installs NCCL library and Google NCCL plugin
   # Runs an init container on all H200 GPU nodes with the NCCL plugin image
   nccl_installer_path: $(ghpc_stage("./nccl-installer.yaml"))
   # Temporary fix for COS issue, will be fixed in next release
   mglru_disable_path: $(ghpc_stage("./mglru-disable.yaml"))
   mtu_size: 8896
-  static_node_count:  # add this
+  static_node_count: 1 # add this
   system_node_pool_disk_size_gb: 200
   a3ultra_node_pool_disk_size_gb: 100
+
+terraform_providers:
+  google:
+    source: hashicorp/google
+    version: 6.13.0
+    configuration:
+      project: $(vars.project_id)
+      region: $(vars.region)
+      zone: $(vars.zone)
+  google-beta:
+    source: hashicorp/google-beta
+    version: 6.13.0
+    configuration:
+      project: $(vars.project_id)
+      region: $(vars.region)
+      zone: $(vars.zone)
 
 deployment_groups:
 - group: primary
@@ -171,12 +187,12 @@ deployment_groups:
     use: [a3-ultragpu-cluster]
 
   - id: workload-manager-install
-    source: github.com/GoogleCloudPlatform/cluster-toolkit.git//modules/management/kubectl-apply?ref=e0c690b
+    source: github.com/GoogleCloudPlatform/cluster-toolkit.git//modules/management/kubectl-apply
     use: [a3-ultragpu-cluster]
     settings:
       kueue:
         install: true
-        version: v0.10.0
+        version: v0.9.0
       jobset:
         install: true
         version: v0.7.1
@@ -194,19 +210,3 @@ deployment_groups:
       node_count: 2
       name: run-nvidia-smi
     outputs: [instructions]
-
-terraform_providers:
-  google:
-    source: hashicorp/google
-    version: 6.13.0
-    configuration:
-      project: $(vars.project_id)
-      region: $(vars.region)
-      zone: $(vars.zone)
-  google-beta:
-    source: hashicorp/google-beta
-    version: 6.13.0
-    configuration:
-      project: $(vars.project_id)
-      region: $(vars.region)
-      zone: $(vars.zone)
