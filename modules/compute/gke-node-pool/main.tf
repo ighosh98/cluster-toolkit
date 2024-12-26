@@ -50,6 +50,10 @@ locals {
   cluster_location = local.cluster_id_parts[3]
 }
 
+locals {
+  nodepool_name = coalesce(var.name, "${var.machine_type}-${local.module_unique_id}")
+}
+
 
 data "google_container_cluster" "gke_cluster" {
   name     = local.cluster_name
@@ -59,7 +63,7 @@ data "google_container_cluster" "gke_cluster" {
 resource "google_container_node_pool" "node_pool" {
   provider = google-beta
 
-  name           = coalesce(var.name, "${var.machine_type}-${local.module_unique_id}")
+  name           = local.nodepool_name
   cluster        = var.cluster_id
   node_locations = var.zones
 

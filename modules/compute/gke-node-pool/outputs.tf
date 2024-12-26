@@ -107,3 +107,8 @@ output "instructions" {
   description = "Instructions for submitting the sample GPUDirect enabled job."
   value       = local.gpu_direct_enabled ? local.gpu_direct_instruction : null
 }
+
+output "nodepool_name" {
+  description = "Name of the node pool being deployed."
+  value       = local.nodepool_name
+}

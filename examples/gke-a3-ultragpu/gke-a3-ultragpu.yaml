@@ -194,7 +194,7 @@ deployment_groups:
       kueue:
         install: true
         version: v0.10.0
-        config_path: kueue-default-configuration.yaml.tftpl
+        config_path: $(ghpc_stage("kueue-default-configuration.yaml.tftpl"))
       jobset:
         install: true
         version: v0.7.1

@@ -79,7 +79,7 @@ module "install_jobset" {
 module "configure_kueue" {
   source        = "./kubectl"
   source_path   = local.install_kueue ? try(var.kueue.config_path, "") : null
-  template_vars = local.install_kueue ? try(var.kueue.config_template_vars, null) : null
+  template_vars = local.install_kueue ? (var.kueue.config_template_vars != null ? var.kueue.config_template_vars : ((split(".", var.kueue.version)[1] >= "10" && var.nodepool_name != null) ? { "nodepool_name" = var.nodepool_name } : null)) : null
   depends_on    = [module.install_kueue]
 
   server_side_apply = true

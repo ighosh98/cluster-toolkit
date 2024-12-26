@@ -80,3 +80,9 @@ variable "jobset" {
   })
   default = {}
 }
+
+variable "nodepool_name" {
+  description = "name of the node pool"
+  type        = string
+  default     = ""
+}
