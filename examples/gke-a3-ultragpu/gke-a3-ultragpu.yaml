@@ -189,11 +189,12 @@ deployment_groups:
 
   - id: workload-manager-install
     source: modules/management/kubectl-apply
-    use: [a3-ultragpu-cluster]
+    use: [a3-ultragpu-cluster, a3-ultragpu-pool]
     settings:
       kueue:
         install: true
         version: v0.10.0
+        config_path: kueue-default-configuration.yaml.tftpl
       jobset:
         install: true
         version: v0.7.1
