@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -67,9 +68,18 @@ var (
 )
 
 func validateRecipePath(path string) error { // No change here
-	if _, err := os.Lstat(path); err != nil {
-		return fmt.Errorf("%q does not exist", path)
+	fmt.Println(path)
+	cleanedPath := filepath.Clean(path)
+
+	// 1. Check if the *directory* containing the file exists:
+	dir := filepath.Dir(cleanedPath) // Get the directory part of the path
+
+	if _, err := os.Stat(cleanedPath); os.IsNotExist(err) {
+		return fmt.Errorf("directory containing recipe not found: %s", dir)
+	} else if err != nil {
+		return fmt.Errorf("error checking recipe directory: %w", err)
 	}
+
 	return nil
 }
 

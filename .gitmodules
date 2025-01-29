@@ -1,4 +1,3 @@
 [submodule "community/recipes/gpu-recipes"]
 	path = community/recipes/gpu-recipes
 	url = https://github.com/AI-Hypercomputer/gpu-recipes.git
-	branch = main
