@@ -1,14 +1,15 @@
 # PREAMBLE
-MIN_PACKER_VERSION=1.7.9 # for building images
-MIN_TERRAFORM_VERSION=1.5.7 # for deploying modules
-MIN_GOLANG_VERSION=1.22 # for building gcluster
+MIN_PACKER_VERSION=1.7.9   # for building images
+MIN_TERRAFORM_VERSION=1.5.7  # for deploying modules
+MIN_GOLANG_VERSION=1.22    # for building gcluster
 
 .PHONY: install install-user tests format install-dev-deps \
         warn-go-missing warn-terraform-missing warn-packer-missing \
         warn-go-version warn-terraform-version warn-packer-version \
         test-engine validate_configs validate_golden_copy packer-check \
         terraform-format packer-format \
-        check-tflint check-pre-commit
+        check-tflint check-pre-commit check-shellcheck \
+		update-submodules  # Add update-submodules to .PHONY
 
 SHELL=/bin/bash -o pipefail
 ENG = ./cmd/... ./pkg/...
@@ -28,6 +29,10 @@ endif
 endif
 
 # RULES MEANT TO BE USED DIRECTLY
+
+# Make update-submodules a dependency of the default target (usually the first target)
+# Also add a dependency on warn-*-missing so that the user knows if they're missing tools
+all: update-submodules warn-go-missing warn-terraform-missing warn-packer-missing gcluster
 
 gcluster: warn-go-version warn-terraform-version warn-packer-version $(shell find ./cmd ./pkg gcluster.go -type f)
 	$(info **************** building gcluster ************************)
@@ -166,7 +171,7 @@ validate_golden_copy: gcluster
 terraform-format:
 	$(info *********** cleaning terraform files syntax and generating terraform documentation ***********)
 	@for folder in ${TERRAFORM_FOLDERS}; do \
-	  echo "checking syntax for $${folder}";\
+		echo "checking syntax for $${folder}";\
 		terraform fmt -list=true $${folder};\
 	done
 	@for folder in ${TERRAFORM_FOLDERS}; do \
@@ -214,14 +219,14 @@ warn-packer-version:
 packer-check:
 	$(info **************** checking packer syntax ***************)
 	@for folder in ${PACKER_FOLDERS}; do \
-	  echo "checking syntax for $${folder}"; \
-	  packer fmt -check $${folder}; \
+		echo "checking syntax for $${folder}"; \
+		packer fmt -check $${folder}; \
 	done
 
 packer-format:
 	$(info **************** formatting packer files and generating packer documentation **************)
 	@for folder in ${PACKER_FOLDERS}; do \
-	  echo -e "cleaning syntax for $${folder}\n";\
+		echo -e "cleaning syntax for $${folder}\n";\
 		packer fmt $${folder};\
 	done
 	@for folder in ${PACKER_FOLDERS}; do \
@@ -232,3 +237,8 @@ packer-format:
 endif
 endif
 # END OF PACKER SECTION
+
+# SUBMODULE UPDATE SECTION - Added this section
+update-submodules:
+	$(info **************** updating submodules *******************)
+	@git submodule update --init --recursive --remote community/recipes/gpu-recipes
