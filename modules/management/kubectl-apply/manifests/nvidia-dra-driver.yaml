@@ -14,7 +14,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: gpu-operator
+  name: nvidia-dra-driver-gpu
   labels:
     helm.sh/chart: nvidia-dra-driver-gpu-25.3.0-rc.2
     app.kubernetes.io/name: nvidia-dra-driver-gpu
